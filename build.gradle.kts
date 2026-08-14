@@ -3,7 +3,7 @@ plugins {
     `maven-publish`
 }
 
-group = "hehe.michael.json"
+group = "heehee.michael.json"
 version = "1.0.0"
 
 java {
