@@ -7,8 +7,11 @@ public class JsonParseException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
+    /** One-based line number where parsing failed. */
     private final int line;
+    /** One-based column number where parsing failed. */
     private final int column;
+    /** Zero-based character offset where parsing failed. */
     private final int offset;
 
     /**

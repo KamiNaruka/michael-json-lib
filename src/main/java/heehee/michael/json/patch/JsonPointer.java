@@ -27,12 +27,21 @@ public final class JsonPointer {
         this.tokens = List.copyOf(tokens);
     }
 
-    /** The empty pointer, referring to the whole document. */
+    /**
+     * Returns the empty pointer, which refers to the whole document.
+     *
+     * @return root JSON Pointer
+     */
     public static JsonPointer root() {
         return ROOT;
     }
 
-    /** Builds a pointer directly from raw (unescaped) reference tokens. */
+    /**
+     * Builds a pointer directly from raw, unescaped reference tokens.
+     *
+     * @param tokens raw reference tokens
+     * @return pointer containing the supplied tokens
+     */
     public static JsonPointer of(String... tokens) {
         return new JsonPointer(Arrays.asList(tokens));
     }
@@ -41,7 +50,9 @@ public final class JsonPointer {
      * Parses a pointer in RFC 6901 wire format, e.g. {@code "/a~1b/0/c~0d"}. An empty string
      * parses to {@link #root()}.
      *
-     * @throws JsonPointerException if non-empty and not starting with {@code '/'}
+     * @param pointer RFC 6901 pointer text
+     * @return parsed pointer
+     * @throws JsonPointerException if non-empty and not starting with {@code '/'} or if an escape is invalid
      */
     public static JsonPointer parse(String pointer) {
         Objects.requireNonNull(pointer, "pointer");
@@ -64,24 +75,43 @@ public final class JsonPointer {
         return tokens.isEmpty();
     }
 
-    /** The pointer's reference tokens, already unescaped, as an immutable list. */
+    /**
+     * Returns the pointer's already-unescaped reference tokens as an immutable list.
+     *
+     * @return immutable reference-token list
+     */
     public List<String> tokens() {
         return tokens;
     }
 
-    /** The final reference token, e.g. {@code "city"} for {@code /address/city}. */
+    /**
+     * Returns the final reference token, e.g. {@code "city"} for {@code /address/city}.
+     *
+     * @return final reference token
+     * @throws JsonPointerException if this is the root pointer
+     */
     public String lastToken() {
         if (isRoot()) throw new JsonPointerException("The root pointer has no last token");
         return tokens.get(tokens.size() - 1);
     }
 
-    /** The pointer to this pointer's containing location, e.g. {@code /address} for {@code /address/city}. */
+    /**
+     * Returns the pointer to this pointer's containing location.
+     *
+     * @return parent pointer
+     * @throws JsonPointerException if this is the root pointer
+     */
     public JsonPointer parent() {
         if (isRoot()) throw new JsonPointerException("The root pointer has no parent");
         return new JsonPointer(tokens.subList(0, tokens.size() - 1));
     }
 
-    /** A new pointer with {@code token} appended, e.g. {@code /a}.child("b") -> {@code /a/b}. */
+    /**
+     * Returns a new pointer with {@code token} appended.
+     *
+     * @param token raw reference token to append
+     * @return child pointer
+     */
     public JsonPointer child(String token) {
         List<String> next = new ArrayList<>(tokens.size() + 1);
         next.addAll(tokens);
@@ -89,13 +119,24 @@ public final class JsonPointer {
         return new JsonPointer(next);
     }
 
-    /** A new pointer with an array index appended, e.g. {@code /a}.child(2) -> {@code /a/2}. */
+    /**
+     * Returns a new pointer with an array index appended.
+     *
+     * @param index non-negative array index
+     * @return child pointer
+     * @throws IllegalArgumentException if {@code index} is negative
+     */
     public JsonPointer child(int index) {
         if (index < 0) throw new IllegalArgumentException("JSON array index must be >= 0");
         return child(String.valueOf(index));
     }
 
-    /** {@code true} if this pointer is a proper (strict) prefix of {@code other}. */
+    /**
+     * Tests whether this pointer is a proper (strict) prefix of {@code other}.
+     *
+     * @param other pointer to compare with
+     * @return {@code true} if this pointer is a strict prefix of {@code other}
+     */
     public boolean isPrefixOf(JsonPointer other) {
         if (tokens.size() >= other.tokens.size()) return false;
         for (int i = 0; i < tokens.size(); i++) {
@@ -107,6 +148,8 @@ public final class JsonPointer {
     /**
      * Resolves this pointer against {@code document}, returning the value it identifies.
      *
+     * @param document document to resolve against
+     * @return value identified by this pointer
      * @throws JsonPointerException if any reference token doesn't resolve (missing object
      *                              member, out-of-range or non-numeric array index, or an
      *                              attempt to navigate into a scalar)
@@ -139,7 +182,12 @@ public final class JsonPointer {
         return current;
     }
 
-    /** {@code true} if {@link #evaluate(JsonValue)} would succeed against {@code document}. */
+    /**
+     * Tests whether {@link #evaluate(JsonValue)} would succeed against {@code document}.
+     *
+     * @param document document to test
+     * @return {@code true} if this pointer resolves successfully
+     */
     public boolean has(JsonValue document) {
         try {
             evaluate(document);

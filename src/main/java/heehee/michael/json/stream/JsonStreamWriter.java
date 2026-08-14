@@ -39,7 +39,13 @@ public final class JsonStreamWriter implements Closeable, Flushable {
         this.out = (out instanceof BufferedWriter) ? out : new BufferedWriter(out);
     }
 
-    /** Opens a file for low-memory writing, encoded as UTF-8. */
+    /**
+     * Opens a file for low-memory writing, encoded as UTF-8.
+     *
+     * @param path file to create or truncate
+     * @return stream writer for the file
+     * @throws IOException if the file cannot be opened for writing
+     */
     public static JsonStreamWriter create(Path path) throws IOException {
         return new JsonStreamWriter(Files.newBufferedWriter(path, StandardCharsets.UTF_8));
     }
@@ -47,6 +53,11 @@ public final class JsonStreamWriter implements Closeable, Flushable {
     /**
      * Writes one top-level JSON value in compact form. Successive calls are separated by a
      * newline, so writing values this way one after another produces valid NDJSON.
+     *
+     * @param value JSON value to write
+     * @return this writer
+     * @throws IOException if writing fails
+     * @throws IllegalStateException if a streamed array is currently open
      */
     public JsonStreamWriter writeValue(JsonValue value) throws IOException {
         if (arrayOpen) throw new IllegalStateException("Cannot write a top-level value while an array is open");
@@ -56,7 +67,13 @@ public final class JsonStreamWriter implements Closeable, Flushable {
         return this;
     }
 
-    /** Writes every value from {@code values} via {@link #writeValue(JsonValue)}, in order. */
+    /**
+     * Writes every value from {@code values} via {@link #writeValue(JsonValue)}, in order.
+     *
+     * @param values values to write
+     * @return this writer
+     * @throws IOException if writing fails
+     */
     public JsonStreamWriter writeValues(Iterator<? extends JsonValue> values) throws IOException {
         while (values.hasNext()) writeValue(values.next());
         return this;
@@ -65,6 +82,10 @@ public final class JsonStreamWriter implements Closeable, Flushable {
     /**
      * Begins a top-level JSON array, returning an {@link ArrayWriter} to stream its elements
      * one at a time. Call {@link ArrayWriter#end()} (or close it) when done.
+     *
+     * @return writer for streaming elements into the array
+     * @throws IOException if writing the opening bracket fails
+     * @throws IllegalStateException if an array is already open
      */
     public ArrayWriter beginArray() throws IOException {
         if (arrayOpen) throw new IllegalStateException("A top-level array is already open");
@@ -128,7 +149,11 @@ public final class JsonStreamWriter implements Closeable, Flushable {
             return this;
         }
 
-        /** Writes the closing {@code ']'}. Calling this more than once is a harmless no-op. */
+        /**
+         * Writes the closing {@code ']'}. Calling this more than once is a harmless no-op.
+         *
+         * @throws IOException if writing the closing bracket fails
+         */
         public void end() throws IOException {
             if (closed) return;
             out.write(']');

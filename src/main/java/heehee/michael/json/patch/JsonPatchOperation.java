@@ -145,7 +145,11 @@ public final class JsonPatchOperation {
     public JsonValue value() { return value == null ? null : JsonCopy.deepCopy(value); }
     JsonValue valueInternal() { return value; }
 
-    /** Serializes this operation to its wire form, e.g. {@code {"op":"add","path":"/a","value":1}}. */
+    /**
+     * Serializes this operation to its wire form, e.g. {@code {"op":"add","path":"/a","value":1}}.
+     *
+     * @return JSON object representing this operation
+     */
     public JsonObject toJson() {
         JsonObject obj = new JsonObject();
         obj.put("op", op.wireName());
@@ -155,7 +159,13 @@ public final class JsonPatchOperation {
         return obj;
     }
 
-    /** Parses one operation from its wire form. */
+    /**
+     * Parses one operation from its wire form.
+     *
+     * @param json operation object containing at least {@code op} and {@code path}
+     * @return parsed operation
+     * @throws JsonPatchException if required members are missing or invalid
+     */
     public static JsonPatchOperation fromJson(JsonObject json) {
         if (!json.containsKey("op") || !json.containsKey("path")) {
             throw new JsonPatchException("A patch operation needs 'op' and 'path' members: " + json);

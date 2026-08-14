@@ -66,7 +66,13 @@ public final class JsonMapper {
     // Java object -> JsonValue
     // ------------------------------------------------------------------
 
-    /** Converts an arbitrary Java object into a {@link JsonValue} tree. */
+    /**
+     * Converts an arbitrary supported Java object into a {@link JsonValue} tree.
+     *
+     * @param value Java value to convert; {@code null} becomes {@link JsonNull}
+     * @return JSON tree representing {@code value}
+     * @throws JsonBindException if the value cannot be mapped
+     */
     public JsonValue toJson(Object value) {
         if (value == null) return JsonNull.INSTANCE;
         if (value instanceof JsonValue jv) return jv;

@@ -26,12 +26,17 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface JsonProperty {
 
-    /** The JSON member name to bind this field to. Defaults to the field's own name. */
+    /**
+     * Returns the JSON member name to bind this field to.
+     *
+     * @return configured JSON member name, or an empty string to use the Java field name
+     */
     String value() default "";
 
     /**
-     * If {@code true}, {@link JsonMapper#fromJson} throws a {@link JsonBindException}
-     * when the JSON object being deserialized is missing this member.
+     * Indicates whether the JSON member must be present while deserializing.
+     *
+     * @return {@code true} when a missing member should cause {@link JsonBindException}
      */
     boolean required() default false;
 }

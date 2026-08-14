@@ -77,12 +77,11 @@ class JsonMergePatchTest {
     }
 
     @Test
-    void diffOfJsonNullFallsBackToRemoval() {
-        // Known RFC 7396 limitation: a merge patch can't express "set this member to null",
-        // since null in a merge patch always means "remove". diff() falls back to removing it.
+    void diffRejectsUnrepresentableJsonNullMember() {
+        // RFC 7396 uses null to mean "remove this member", so a merge patch cannot represent
+        // changing an existing member to JSON null. diff() therefore rejects that request.
         JsonValue source = Json.parse("{\"a\":1}");
         JsonValue target = Json.parse("{\"a\":null}");
-        JsonMergePatch patch = JsonMergePatch.diff(source, target);
-        assertEquals(Json.parse("{}"), patch.apply(source));
+        assertThrows(IllegalArgumentException.class, () -> JsonMergePatch.diff(source, target));
     }
 }

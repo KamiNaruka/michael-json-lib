@@ -49,7 +49,11 @@ public final class JsonMergePatch {
         return of(Json.parse(json));
     }
 
-    /** The raw patch document. */
+    /**
+     * Returns a deep copy of the raw merge-patch document.
+     *
+     * @return copied merge-patch JSON value
+     */
     public JsonValue toJson() {
         return JsonCopy.deepCopy(patch);
     }
@@ -62,7 +66,12 @@ public final class JsonMergePatch {
         return patch.toPrettyString();
     }
 
-    /** Applies this merge patch to {@code target}, returning the resulting document (input is left untouched). */
+    /**
+     * Applies this merge patch to {@code target} without mutating the supplied document.
+     *
+     * @param target document to patch
+     * @return patched document
+     */
     public JsonValue apply(JsonValue target) {
         return merge(JsonCopy.deepCopy(target), patch);
     }
@@ -94,6 +103,11 @@ public final class JsonMergePatch {
      * Produces a merge patch that transforms {@code source} into {@code target}. Only object
      * members are diffed recursively; arrays (and any other non-object value) that differ at
      * all are replaced wholesale, matching what {@link #apply} can actually express.
+     *
+     * @param source original document
+     * @param target desired document
+     * @return merge patch representing the transformation
+     * @throws IllegalArgumentException if the transformation would need to set an object member to JSON {@code null}
      */
     public static JsonMergePatch diff(JsonValue source, JsonValue target) {
         return new JsonMergePatch(diffValue(source, target));

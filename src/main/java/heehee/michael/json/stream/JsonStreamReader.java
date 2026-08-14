@@ -59,7 +59,13 @@ public final class JsonStreamReader implements Closeable {
         this.tokenizer = new Tokenizer(new PushbackReader(buffered, 1));
     }
 
-    /** Opens a file for low-memory reading, decoded as UTF-8. */
+    /**
+     * Opens a file for low-memory reading, decoded as UTF-8.
+     *
+     * @param path file to open
+     * @return stream reader for the file
+     * @throws IOException if the file cannot be opened
+     */
     public static JsonStreamReader open(Path path) throws IOException {
         return new JsonStreamReader(Files.newBufferedReader(path, StandardCharsets.UTF_8));
     }
@@ -68,13 +74,24 @@ public final class JsonStreamReader implements Closeable {
     // Sequential top-level values / NDJSON
     // ------------------------------------------------------------------
 
-    /** Returns {@code true} if there is at least one more top-level JSON value in the stream. */
+    /**
+     * Returns whether another top-level JSON value is available.
+     *
+     * @return {@code true} if another value can be read
+     * @throws IOException if the underlying reader fails
+     */
     public boolean hasNext() throws IOException {
         tokenizer.skipWhitespace();
         return tokenizer.peek() != -1;
     }
 
-    /** Reads and returns the next top-level JSON value from the stream. */
+    /**
+     * Reads the next top-level JSON value from the stream.
+     *
+     * @return next JSON value
+     * @throws IOException if the underlying reader fails or malformed JSON is encountered
+     * @throws NoSuchElementException if no value remains
+     */
     public JsonValue next() throws IOException {
         if (!hasNext()) throw new NoSuchElementException("No more JSON values in the stream");
         return tokenizer.parseValue();
@@ -83,6 +100,8 @@ public final class JsonStreamReader implements Closeable {
     /**
      * Iterates the stream's top-level values. {@link IOException}s are rethrown wrapped
      * in {@link UncheckedIOException}, since {@link Iterator} can't declare checked exceptions.
+     *
+     * @return lazy iterator over top-level JSON values
      */
     public Iterator<JsonValue> iterator() {
         return new Iterator<>() {
@@ -112,7 +131,11 @@ public final class JsonStreamReader implements Closeable {
         };
     }
 
-    /** A lazy, non-parallel {@link Stream} view over {@link #iterator()}. */
+    /**
+     * Returns a lazy, non-parallel {@link Stream} view over {@link #iterator()}.
+     *
+     * @return stream of top-level JSON values
+     */
     public Stream<JsonValue> stream() {
         return StreamSupport.stream(
                 Spliterators.spliteratorUnknownSize(iterator(), Spliterator.ORDERED | Spliterator.NONNULL), false);
@@ -128,7 +151,8 @@ public final class JsonStreamReader implements Closeable {
      * is never held fully in memory. The iterator's {@code hasNext()}/{@code next()} wrap
      * {@link IOException}s as {@link UncheckedIOException}.
      *
-     * @throws IOException if the next non-whitespace character isn't {@code '['}
+     * @return lazy iterator over the top-level array's elements
+     * @throws IOException if the next non-whitespace character isn't {@code '['} or reading fails
      */
     public Iterator<JsonValue> readArrayElements() throws IOException {
         tokenizer.skipWhitespace();

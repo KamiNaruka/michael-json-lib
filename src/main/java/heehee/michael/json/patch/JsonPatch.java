@@ -126,7 +126,13 @@ public final class JsonPatch implements Iterable<JsonPatchOperation> {
     // apply
     // ------------------------------------------------------------------
 
-    /** Applies this patch to {@code document}, returning the resulting document (input is left untouched). */
+    /**
+     * Applies this patch to {@code document} without mutating the supplied document.
+     *
+     * @param document document to patch
+     * @return patched document
+     * @throws JsonPatchException if an operation cannot be applied
+     */
     public JsonValue apply(JsonValue document) {
         JsonValue root = JsonCopy.deepCopy(document);
         for (JsonPatchOperation op : operations) {
@@ -253,7 +259,13 @@ public final class JsonPatch implements Iterable<JsonPatchOperation> {
     // diff
     // ------------------------------------------------------------------
 
-    /** Produces a patch that transforms {@code source} into {@code target}. */
+    /**
+     * Produces a JSON Patch that transforms {@code source} into {@code target}.
+     *
+     * @param source original document
+     * @param target desired document
+     * @return patch operations representing the transformation
+     */
     public static JsonPatch diff(JsonValue source, JsonValue target) {
         List<JsonPatchOperation> ops = new ArrayList<>();
         diff(JsonPointer.root(), source, target, ops);

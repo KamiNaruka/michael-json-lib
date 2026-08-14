@@ -126,8 +126,11 @@ public final class JsonArray extends JsonValue implements Iterable<JsonValue> {
      * {@code index} may be anywhere from {@code 0} to {@link #size()} inclusive;
      * an index equal to {@code size()} appends, matching the semantics needed by
      * JSON Patch ("RFC 6902") {@code add} operations targeting {@code /-} or an
-     * explicit end-of-array index.
+     * explicit end-of-array index. A Java {@code null} value is stored as {@link JsonNull}.
      *
+     * @param index insertion index from {@code 0} through {@link #size()} inclusive
+     * @param value value to insert; Java {@code null} becomes JSON {@code null}
+     * @return this array
      * @throws IndexOutOfBoundsException if index is negative or greater than {@link #size()}
      */
     public JsonArray add(int index, JsonValue value) {
