@@ -10,6 +10,9 @@ A standalone JSON library for Java — no external dependency at runtime
 - `path("a.b.0.c")` dot-path navigation that returns `JsonNull` instead of throwing when a segment is missing
 - Compact and pretty printing
 - Immutable value types (`JsonString`, `JsonNumber`, `JsonBoolean`, `JsonNull`) plus mutable containers (`JsonObject`, `JsonArray`)
+- **Data binding** (`heehee.michael.json.bind`) — POJO ↔ JSON via `@JsonProperty`/`@JsonIgnore`, with nested objects, `List`/`Map`, enums, `java.time`, and generics through `TypeReference`
+- **Streaming API** (`heehee.michael.json.stream`) — `JsonStreamReader`/`JsonStreamWriter` read/write without buffering the whole document, including NDJSON
+- **JSON tooling** (`heehee.michael.json.patch`) — `JsonPointer` (RFC 6901), `JsonPatch` (RFC 6902, with diff), `JsonMergePatch` (RFC 7396, with diff)
 
 ## Project layout
 
@@ -17,7 +20,7 @@ A standalone JSON library for Java — no external dependency at runtime
 json/
 ├── build.gradle.kts
 ├── settings.gradle.kts
-├── src/main/java/hehe/michael/json/
+├── src/main/java/heehee/michael/json/
 │   ├── Json.java
 │   ├── JsonValue.java
 │   ├── JsonObject.java
@@ -30,11 +33,34 @@ json/
 │   ├── JsonWriter.java
 │   ├── JsonType.java
 │   ├── JsonParseException.java
-│   └── JsonTypeException.java
-└── src/test/java/hehe/michael/json/
+│   ├── JsonTypeException.java
+│   ├── bind/                  # POJO <-> JSON data binding
+│   │   ├── JsonMapper.java
+│   │   ├── JsonProperty.java
+│   │   ├── JsonIgnore.java
+│   │   ├── TypeReference.java
+│   │   └── JsonBindException.java
+│   ├── stream/                 # low-memory streaming (incl. NDJSON)
+│   │   ├── JsonStreamReader.java
+│   │   └── JsonStreamWriter.java
+│   └── patch/                  # JSON Pointer / Patch / Merge Patch
+│       ├── JsonPointer.java
+│       ├── JsonPointerException.java
+│       ├── JsonPatch.java
+│       ├── JsonPatchOperation.java
+│       ├── JsonPatchException.java
+│       ├── JsonMergePatch.java
+│       └── JsonCopy.java
+└── src/test/java/heehee/michael/json/
     ├── JsonParserTest.java
     ├── JsonWriterTest.java
-    └── JsonValueTest.java
+    ├── JsonValueTest.java
+    ├── bind/JsonMapperTest.java
+    ├── stream/JsonStreamTest.java
+    └── patch/
+        ├── JsonPointerTest.java
+        ├── JsonPatchTest.java
+        └── JsonMergePatchTest.java
 ```
 
 ## Build / Test
@@ -59,7 +85,7 @@ Then use `./gradlew` as usual:
 ### Parse
 
 ```java
-import hehe.michael.json.*;
+import heehee.michael.json.*;
 
 JsonValue v = Json.parse("""
     {
@@ -113,6 +139,78 @@ try {
 } catch (JsonTypeException e) {
     System.out.println(e.getMessage());
 }
+```
+
+## Data binding
+
+```java
+import heehee.michael.json.bind.*;
+
+class User {
+    @JsonProperty("full_name")
+    String name;
+    int age;
+    Role role;                 // enum, bound by name()
+    LocalDate joined;          // java.time, bound via ISO-8601
+    List<String> tags;
+    @JsonIgnore
+    String internalNote;       // excluded from JSON entirely
+}
+
+JsonMapper mapper = new JsonMapper();
+
+JsonValue json = mapper.toJson(user);
+User back = mapper.fromJson(json, User.class);
+
+// Generic types need a TypeReference, since Java erases them:
+List<User> users = mapper.fromJson(jsonArrayText, new TypeReference<List<User>>() {});
+Map<String, List<Integer>> nested = mapper.fromJson(text, new TypeReference<Map<String, List<Integer>>>() {});
+```
+
+POJOs need a no-arg constructor (any visibility). Fields are matched by name (or by
+`@JsonProperty("...")`); `static`/`transient` fields are skipped automatically, same as `@JsonIgnore`.
+
+## Streaming (low-memory, NDJSON)
+
+```java
+import heehee.michael.json.stream.*;
+
+// Write NDJSON — one compact JSON value per line
+try (JsonStreamWriter w = JsonStreamWriter.create(Path.of("events.ndjson"))) {
+    for (JsonObject event : events) w.writeValue(event);
+}
+
+// Read it back one value at a time, never loading the whole file
+try (JsonStreamReader r = JsonStreamReader.open(Path.of("events.ndjson"))) {
+    r.stream().forEach(event -> process(event));
+}
+
+// Stream the elements of one huge top-level array without buffering it
+try (JsonStreamReader r = JsonStreamReader.open(Path.of("big-array.json"))) {
+    Iterator<JsonValue> it = r.readArrayElements();
+    while (it.hasNext()) process(it.next());
+}
+```
+
+## JSON Pointer / Patch / Merge Patch
+
+```java
+import heehee.michael.json.patch.*;
+
+// RFC 6901 — JSON Pointer
+JsonValue city = JsonPointer.parse("/address/city").evaluate(doc);
+
+// RFC 6902 — JSON Patch, with diff
+JsonPatch patch = JsonPatch.fromJson("""
+    [{"op": "replace", "path": "/name", "value": "New Name"}]
+    """);
+JsonValue updated = patch.apply(doc);          // doc itself is left untouched
+JsonPatch computed = JsonPatch.diff(oldDoc, newDoc);
+
+// RFC 7396 — JSON Merge Patch, with diff
+JsonMergePatch merge = JsonMergePatch.fromJson("{\"name\": \"New Name\", \"nickname\": null}");
+JsonValue merged = merge.apply(doc);           // null removes a member
+JsonMergePatch mergeDiff = JsonMergePatch.diff(oldDoc, newDoc);
 ```
 
 ## Why BigDecimal
