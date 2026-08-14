@@ -34,43 +34,89 @@ public final class JsonPatch implements Iterable<JsonPatchOperation> {
         this.operations = List.copyOf(operations);
     }
 
+    /**
+     * Creates a patch from the supplied operations in order.
+     *
+     * @param operations ordered operations
+     * @return patch
+     */
     public static JsonPatch of(JsonPatchOperation... operations) {
         return new JsonPatch(Arrays.asList(operations));
     }
 
+    /**
+     * Creates a patch from a list of operations in order. The list is copied.
+     *
+     * @param operations ordered operations
+     * @return patch
+     */
     public static JsonPatch of(List<JsonPatchOperation> operations) {
         return new JsonPatch(operations);
     }
 
+    /**
+     * Parses an RFC 6902 patch from its JSON array representation.
+     *
+     * @param patchArray patch array
+     * @return parsed patch
+     * @throws JsonPatchException if an element is not a valid operation object
+     */
     public static JsonPatch fromJson(JsonArray patchArray) {
         List<JsonPatchOperation> ops = new ArrayList<>(patchArray.size());
         for (JsonValue v : patchArray) ops.add(JsonPatchOperation.fromJson(v.asObject()));
         return new JsonPatch(ops);
     }
 
+    /**
+     * Parses JSON text as an RFC 6902 patch array.
+     *
+     * @param json patch JSON text
+     * @return parsed patch
+     */
     public static JsonPatch fromJson(String json) {
         return fromJson(Json.parse(json).asArray());
     }
 
+    /**
+     * Serializes the patch to a new JSON array of operation objects.
+     *
+     * @return patch array
+     */
     public JsonArray toJson() {
         JsonArray arr = new JsonArray();
         for (JsonPatchOperation op : operations) arr.add(op.toJson());
         return arr;
     }
 
+    /**
+     * Returns the ordered operations as an immutable list.
+     *
+     * @return immutable operation list
+     */
     public List<JsonPatchOperation> operations() {
         return operations;
     }
 
+    /**
+     * Returns the number of operations in this patch.
+     *
+     * @return operation count
+     */
     public int size() {
         return operations.size();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public java.util.Iterator<JsonPatchOperation> iterator() {
         return operations.iterator();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return toJson().toPrettyString();

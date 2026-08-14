@@ -8,8 +8,22 @@ import java.util.Locale;
 /** A single RFC 6902 JSON Patch operation ({@code add}, {@code remove}, {@code replace}, {@code move}, {@code copy}, or {@code test}). */
 public final class JsonPatchOperation {
 
+    /**
+     * The six operation kinds defined by RFC 6902.
+     */
     public enum Op {
-        ADD, REMOVE, REPLACE, MOVE, COPY, TEST;
+        /** Adds a value at the target path. */
+        ADD,
+        /** Removes the value at the target path. */
+        REMOVE,
+        /** Replaces the value at the target path. */
+        REPLACE,
+        /** Moves a value from a source path to the target path. */
+        MOVE,
+        /** Copies a value from a source path to the target path. */
+        COPY,
+        /** Verifies that the target value equals the supplied value. */
+        TEST;
 
         String wireName() {
             return name().toLowerCase(Locale.ROOT);
@@ -35,26 +49,67 @@ public final class JsonPatchOperation {
         this.value = value == null ? null : JsonCopy.deepCopy(value);
     }
 
+    /**
+     * Creates an {@code add} operation. The supplied value is deep-copied into the operation.
+     *
+     * @param path destination pointer
+     * @param value value to add
+     * @return add operation
+     */
     public static JsonPatchOperation add(JsonPointer path, JsonValue value) {
         return new JsonPatchOperation(Op.ADD, require(path, "path"), null, require(value, "value"));
     }
 
+    /**
+     * Creates a {@code remove} operation.
+     *
+     * @param path pointer to the value to remove
+     * @return remove operation
+     */
     public static JsonPatchOperation remove(JsonPointer path) {
         return new JsonPatchOperation(Op.REMOVE, require(path, "path"), null, null);
     }
 
+    /**
+     * Creates a {@code replace} operation. The supplied value is deep-copied into the operation.
+     *
+     * @param path pointer to the value to replace
+     * @param value replacement value
+     * @return replace operation
+     */
     public static JsonPatchOperation replace(JsonPointer path, JsonValue value) {
         return new JsonPatchOperation(Op.REPLACE, require(path, "path"), null, require(value, "value"));
     }
 
+    /**
+     * Creates a {@code move} operation.
+     *
+     * @param from source pointer
+     * @param path destination pointer
+     * @return move operation
+     */
     public static JsonPatchOperation move(JsonPointer from, JsonPointer path) {
         return new JsonPatchOperation(Op.MOVE, require(path, "path"), require(from, "from"), null);
     }
 
+    /**
+     * Creates a {@code copy} operation.
+     *
+     * @param from source pointer
+     * @param path destination pointer
+     * @return copy operation
+     */
     public static JsonPatchOperation copy(JsonPointer from, JsonPointer path) {
         return new JsonPatchOperation(Op.COPY, require(path, "path"), require(from, "from"), null);
     }
 
+    /**
+     * Creates a {@code test} operation. The supplied comparison value is deep-copied into the operation.
+     *
+     * @param path pointer to test
+     * @param value expected value
+     * @return test operation
+     */
     public static JsonPatchOperation test(JsonPointer path, JsonValue value) {
         return new JsonPatchOperation(Op.TEST, require(path, "path"), null, require(value, "value"));
     }
@@ -64,9 +119,29 @@ public final class JsonPatchOperation {
         return v;
     }
 
+    /**
+     * Returns this operation's kind.
+     *
+     * @return operation kind
+     */
     public Op op() { return op; }
+    /**
+     * Returns this operation's target path.
+     *
+     * @return target pointer
+     */
     public JsonPointer path() { return path; }
+    /**
+     * Returns the source pointer used by {@code move} and {@code copy}.
+     *
+     * @return source pointer, or {@code null} for other operation kinds
+     */
     public JsonPointer from() { return from; }
+    /**
+     * Returns a deep copy of the value used by {@code add}, {@code replace}, or {@code test}.
+     *
+     * @return copied operation value, or {@code null} for operation kinds without a value
+     */
     public JsonValue value() { return value == null ? null : JsonCopy.deepCopy(value); }
     JsonValue valueInternal() { return value; }
 
@@ -108,6 +183,9 @@ public final class JsonPatchOperation {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return toJson().toString();

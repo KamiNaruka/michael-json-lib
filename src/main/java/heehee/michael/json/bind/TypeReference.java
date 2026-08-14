@@ -21,6 +21,11 @@ public abstract class TypeReference<T> {
 
     private final Type type;
 
+    /**
+     * Captures the actual generic type argument from the anonymous subclass.
+     *
+     * @throws IllegalStateException if instantiated without a parameterized anonymous subclass
+     */
     protected TypeReference() {
         Type superclass = getClass().getGenericSuperclass();
         if (!(superclass instanceof ParameterizedType)) {
@@ -31,10 +36,18 @@ public abstract class TypeReference<T> {
         this.type = ((ParameterizedType) superclass).getActualTypeArguments()[0];
     }
 
+    /**
+     * Returns the captured runtime type.
+     *
+     * @return captured type
+     */
     public Type getType() {
         return type;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return type.toString();

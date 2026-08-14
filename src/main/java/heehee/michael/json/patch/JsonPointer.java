@@ -55,6 +55,11 @@ public final class JsonPointer {
         return new JsonPointer(toks);
     }
 
+    /**
+     * Returns whether this is the empty pointer that identifies the whole document.
+     *
+     * @return whether this pointer is the root pointer
+     */
     public boolean isRoot() {
         return tokens.isEmpty();
     }
@@ -178,6 +183,9 @@ public final class JsonPointer {
         return token.replace("~", "~0").replace("/", "~1");
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         if (isRoot()) return "";
@@ -186,6 +194,9 @@ public final class JsonPointer {
         return sb.toString();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -193,6 +204,9 @@ public final class JsonPointer {
         return tokens.equals(((JsonPointer) o).tokens);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public int hashCode() {
         return tokens.hashCode();

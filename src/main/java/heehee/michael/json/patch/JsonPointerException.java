@@ -5,10 +5,21 @@ public class JsonPointerException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
+    /**
+     * Creates a JSON Pointer error.
+     *
+     * @param message error description
+     */
     public JsonPointerException(String message) {
         super(message);
     }
 
+    /**
+     * Creates a JSON Pointer error with its underlying cause.
+     *
+     * @param message error description
+     * @param cause underlying failure
+     */
     public JsonPointerException(String message, Throwable cause) {
         super(message, cause);
     }

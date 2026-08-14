@@ -48,6 +48,11 @@ public final class JsonStreamReader implements Closeable {
 
     private final Tokenizer tokenizer;
 
+    /**
+     * Creates a streaming reader over the supplied character source. Closing this object closes the supplied reader.
+     *
+     * @param reader character source
+     */
     public JsonStreamReader(Reader reader) {
         Reader buffered = (reader instanceof BufferedReader || reader instanceof PushbackReader)
                 ? reader : new BufferedReader(reader);
@@ -81,6 +86,9 @@ public final class JsonStreamReader implements Closeable {
      */
     public Iterator<JsonValue> iterator() {
         return new Iterator<>() {
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public boolean hasNext() {
                 try {
@@ -90,6 +98,9 @@ public final class JsonStreamReader implements Closeable {
                 }
             }
 
+            /**
+             * {@inheritDoc}
+             */
             @Override
             public JsonValue next() {
                 try {
@@ -165,12 +176,18 @@ public final class JsonStreamReader implements Closeable {
             }
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public boolean hasNext() {
             computeNext();
             return !exhausted;
         }
 
+        /**
+         * {@inheritDoc}
+         */
         @Override
         public JsonValue next() {
             computeNext();
@@ -184,6 +201,11 @@ public final class JsonStreamReader implements Closeable {
         return c == -1 ? "<end of input>" : String.valueOf((char) c);
     }
 
+    /**
+     * Closes the underlying reader.
+     *
+     * @throws java.io.IOException if closing the reader fails
+     */
     @Override
     public void close() throws IOException {
         tokenizer.close();
@@ -385,6 +407,11 @@ public final class JsonStreamReader implements Closeable {
             return new JsonParseException(message, line, col, pos);
         }
 
+        /**
+         * Closes the underlying reader.
+         *
+         * @throws java.io.IOException if closing the reader fails
+         */
         @Override
         public void close() throws IOException {
             in.close();

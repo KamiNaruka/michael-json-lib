@@ -56,6 +56,9 @@ import java.util.Set;
  */
 public final class JsonMapper {
 
+    /**
+     * Creates a mapper with the built-in reflection-based conversion rules.
+     */
     public JsonMapper() {
     }
 
@@ -82,10 +85,24 @@ public final class JsonMapper {
         return pojoToJson(value);
     }
 
+    /**
+     * Serializes a Java value to compact JSON text using {@link #toJson(Object)}.
+     *
+     * @param value Java value
+     * @return compact JSON text
+     * @throws JsonBindException if the value cannot be mapped
+     */
     public String toJsonString(Object value) {
         return Json.stringify(toJson(value));
     }
 
+    /**
+     * Serializes a Java value to pretty-printed JSON text using {@link #toJson(Object)}.
+     *
+     * @param value Java value
+     * @return pretty-printed JSON text
+     * @throws JsonBindException if the value cannot be mapped
+     */
     public String toJsonStringPretty(Object value) {
         return Json.stringifyPretty(toJson(value));
     }
@@ -152,13 +169,40 @@ public final class JsonMapper {
     // JsonValue -> Java object
     // ------------------------------------------------------------------
 
+    /**
+     * Parses JSON text and converts it to the requested concrete Java class.
+     *
+     * @param json JSON text
+     * @param type target class
+     * @param <T> target Java type
+     * @return deserialized value
+     * @throws JsonBindException if conversion fails
+     */
     public <T> T fromJson(String json, Class<T> type) {
         return fromJson(Json.parse(json), type);
     }
 
+    /**
+     * Parses JSON text and converts it to the generic type captured by a {@link TypeReference}.
+     *
+     * @param json JSON text
+     * @param typeRef captured target type
+     * @param <T> target Java type
+     * @return deserialized value
+     * @throws JsonBindException if conversion fails
+     */
     public <T> T fromJson(String json, TypeReference<T> typeRef) {
         return fromJson(Json.parse(json), typeRef);
     }
+    /**
+     * Converts a JSON tree value to the requested concrete Java class.
+     *
+     * @param json JSON value
+     * @param type target class
+     * @param <T> target Java type
+     * @return deserialized value
+     * @throws JsonBindException if conversion fails
+     */
 
     @SuppressWarnings("unchecked")
     public <T> T fromJson(JsonValue json, Class<T> type) {
@@ -166,6 +210,15 @@ public final class JsonMapper {
         Objects.requireNonNull(type, "type");
         return (T) fromJsonValue(json, type);
     }
+    /**
+     * Converts a JSON tree value to the generic type captured by a {@link TypeReference}.
+     *
+     * @param json JSON value
+     * @param typeRef captured target type
+     * @param <T> target Java type
+     * @return deserialized value
+     * @throws JsonBindException if conversion fails
+     */
 
     @SuppressWarnings("unchecked")
     public <T> T fromJson(JsonValue json, TypeReference<T> typeRef) {

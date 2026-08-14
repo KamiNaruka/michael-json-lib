@@ -30,6 +30,11 @@ public final class JsonStreamWriter implements Closeable, Flushable {
     private boolean wroteSomething = false;
     private boolean arrayOpen = false;
 
+    /**
+     * Creates a streaming writer over the supplied character destination. Closing this object closes the supplied writer.
+     *
+     * @param out character destination
+     */
     public JsonStreamWriter(Writer out) {
         this.out = (out instanceof BufferedWriter) ? out : new BufferedWriter(out);
     }
@@ -70,11 +75,20 @@ public final class JsonStreamWriter implements Closeable, Flushable {
         return new ArrayWriter();
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void flush() throws IOException {
         out.flush();
     }
 
+    /**
+     * Closes the underlying writer. A top-level array must be ended before this writer can be closed.
+     *
+     * @throws IllegalStateException if an array is still open
+     * @throws java.io.IOException if closing the writer fails
+     */
     @Override
     public void close() throws IOException {
         if (arrayOpen) throw new IllegalStateException("Cannot close JsonStreamWriter while an array is still open");
@@ -86,6 +100,14 @@ public final class JsonStreamWriter implements Closeable, Flushable {
         private boolean first = true;
         private boolean closed = false;
 
+        /**
+         * Writes one compact element to the open top-level array.
+         *
+         * @param element array element
+         * @return this array writer
+         * @throws java.io.IOException if writing fails
+         * @throws IllegalStateException if this array writer has already been closed
+         */
         public ArrayWriter write(JsonValue element) throws IOException {
             if (closed) throw new IllegalStateException("This array has already been closed with end()");
             if (!first) out.write(',');
@@ -94,6 +116,13 @@ public final class JsonStreamWriter implements Closeable, Flushable {
             return this;
         }
 
+        /**
+         * Writes every remaining element from an iterator to the open array.
+         *
+         * @param elements elements to write
+         * @return this array writer
+         * @throws java.io.IOException if writing fails
+         */
         public ArrayWriter writeAll(Iterator<? extends JsonValue> elements) throws IOException {
             while (elements.hasNext()) write(elements.next());
             return this;
@@ -107,6 +136,12 @@ public final class JsonStreamWriter implements Closeable, Flushable {
             arrayOpen = false;
         }
 
+        /**
+         * Closes the underlying writer. A top-level array must be ended before this writer can be closed.
+         *
+         * @throws IllegalStateException if an array is still open
+         * @throws java.io.IOException if closing the writer fails
+         */
         @Override
         public void close() throws IOException {
             end();

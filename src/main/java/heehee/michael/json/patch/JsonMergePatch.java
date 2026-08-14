@@ -29,10 +29,22 @@ public final class JsonMergePatch {
         this.patch = JsonCopy.deepCopy(patch);
     }
 
+    /**
+     * Creates a merge patch from a JSON value, taking a deep copy so later mutations of the argument do not affect this patch.
+     *
+     * @param patch merge-patch document
+     * @return immutable merge-patch wrapper
+     */
     public static JsonMergePatch of(JsonValue patch) {
         return new JsonMergePatch(Objects.requireNonNull(patch, "patch"));
     }
 
+    /**
+     * Parses JSON text as an RFC 7396 merge patch.
+     *
+     * @param json merge-patch JSON text
+     * @return parsed merge patch
+     */
     public static JsonMergePatch fromJson(String json) {
         return of(Json.parse(json));
     }
@@ -42,6 +54,9 @@ public final class JsonMergePatch {
         return JsonCopy.deepCopy(patch);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public String toString() {
         return patch.toPrettyString();
