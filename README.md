@@ -1,8 +1,8 @@
-README(2).md
-
 # json
 
 Lightweight JSON library for Java with no runtime dependencies.
+
+[![](https://jitpack.io/v/KamiNaruka/michael-json-lib.svg)](https://jitpack.io/#KamiNaruka/michael-json-lib)
 
 ## Features
 
