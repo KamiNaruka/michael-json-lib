@@ -45,7 +45,7 @@ publishing {
                 developers {
                     developer {
                         id.set("KamiNaruka")
-                        name.set("kamimuse.")
+                        name.set("kamimasu.")
                     }
                 }
 
