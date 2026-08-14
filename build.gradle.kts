@@ -10,6 +10,7 @@ java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(17))
     }
+
     withSourcesJar()
     withJavadocJar()
 }
@@ -31,37 +32,41 @@ tasks.withType<JavaCompile> {
     options.encoding = "UTF-8"
 }
 
-java {
-    withSourcesJar()
-    withJavadocJar()
-}
-
 publishing {
     publications {
         create<MavenPublication>("maven") {
             from(components["java"])
+
             pom {
-                description.set("a simple json java lib")
-                url.set("https://github.com/KaniNaurka/michael-json-lib")
+                name.set("michael-json-lib")
+                description.set("A simple JSON library for Java")
+                url.set("https://github.com/KamiNaruka/michael-json-lib")
+
                 developers {
                     developer {
-                        id.set("KaniNaurka")
+                        id.set("KamiNaruka")
                         name.set("kamimuse.")
                     }
                 }
+
                 scm {
-                    connection.set("scm:git:github.com/KaniNaurka/michael-json-lib.git")
-                    developerConnection.set("scm:git:ssh://github.com/KaniNaurka/michael-json-lib.git")
-                    url.set("https://github.com/KaniNaurka/michael-json-lib")
+                    connection.set("scm:git:https://github.com/KamiNaruka/michael-json-lib.git")
+                    developerConnection.set("scm:git:ssh://git@github.com/KamiNaruka/michael-json-lib.git")
+                    url.set("https://github.com/KamiNaruka/michael-json-lib")
                 }
             }
         }
     }
-    
+
     repositories {
         maven {
-            name = "Build"
-            url = uri(layout.buildDirectory.dir("maven"))
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/KamiNaruka/michael-json-lib")
+
+            credentials {
+                username = System.getenv("USERNAME")
+                password = System.getenv("TOKEN")
+            }
         }
     }
 }
